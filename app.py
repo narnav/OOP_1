@@ -5,6 +5,10 @@ i'm createing a bank application ...
 """
 from enum import Enum, auto
 import json
+import os
+
+DEBUG =True
+
 
 class Bank_Actions(Enum):
     CREATE_ACCOUNT =auto()
@@ -26,21 +30,38 @@ class Client:
         self.id = id
         self.first_name =first_name
         self.occupation =occupation
-        self.balance =0
+        self.__balance =0
+        self.__password="123"
 
     def __str__(self) -> str:
         return json.dumps({
             'id': self.id,
             'first_name': self.first_name,
-            'occupation': self.occupation
+            'occupation': self.occupation,
+            'balance':self.__balance
         })
     
-    
+    def reset_password(self,new_pas):
+        self.__password =new_pas
 
+    def check_password(self,password):
+        if password == self.__password: return True
+        return False
+
+    def withdraw(self,password):
+        if self.check_password(password):
+            self.__balance -= 100
+
+    def deposit(self):
+        self.__balance +=200
 
     def __repr__(self):
         return f"Client(id={self.id}, first_name='{self.first_name}', occupation='{self.occupation}')"
     
+    def get_balance(self):
+        return self.balance
+    
+
 class Bank:
     clients =list()
     def check_duplicate(self,id):
@@ -56,6 +77,7 @@ class Bank:
         client =Client(id,first_name,occupation)
         self.clients.append(client)
         print(f"account created - first name {client.first_name} , id: {client.id}")
+        return client
 
     def close_account(self):
         print("close account - under construction")
@@ -74,6 +96,11 @@ class Bank:
         for client in self.clients:
             print( client)
 
+    def get_client_by_id(self,id):
+        for client in self.clients:
+            if str(client.id) == str( id) :return client
+        
+
 def client_gather_data():
     client_id=input("clien id?")
     first_name= input("first name?")
@@ -81,18 +108,45 @@ def client_gather_data():
 
     return client_id,first_name,occupation
 
+
+def test_add_clients(bank):
+    if DEBUG :
+        c= bank.create_account(111,"Waga","killer") # Done
+        c.deposit()
+        c1=bank.create_account(222,"baga","teller") # Done
+        c1.deposit()
+        c1.deposit()
+
+
 if __name__ =='__main__':
     bank = Bank()
+    test_add_clients(bank)
     while True:
+        
         user_selection= bank.show_menu()
         if user_selection == Bank_Actions.EXIT:  exit() 
-        if user_selection == Bank_Actions.CREATE_ACCOUNT: 
+        elif user_selection == Bank_Actions.CREATE_ACCOUNT: 
             client_id, first_name, occupation = client_gather_data()
             bank.create_account(client_id,first_name,occupation) # Done
-        if user_selection == Bank_Actions.CLOSE_ACCOUNT: bank.close_account()
-        if user_selection == Bank_Actions.SHOW_ALL_CLIENTS: bank.show_all_clients() #DONE
-        if user_selection == Bank_Actions.CLIENT_ACTIONS:
-            bank.show_client_menu()
+        elif user_selection == Bank_Actions.CLOSE_ACCOUNT: bank.close_account()
+        elif user_selection == Bank_Actions.SHOW_ALL_CLIENTS: bank.show_all_clients() #DONE
+        elif user_selection == Bank_Actions.CLIENT_ACTIONS:
+            os.system('cls')
+            user_selection= bank.show_client_menu()
+            if user_selection ==Clien_Actions.DEPOSIT:
+                    bank.show_all_clients()
+                    c=bank.get_client_by_id( input("please select client (by id)"))
+                    print( c)
+                    c.deposit()
+                    print("after deposit...")
+                    print( c)
+        
+        
+# WITHDRAW = auto()
+#     DEPOSIT =auto() 
+#     TRANSFER =auto()
+#     CHECK_BALANCE=auto()
+#     SHOW_MOVMENTS =auto()
 
 # https://github.com/Deepali-Srivastava/object-oriented-programming-in-python/tree/main/exercise-code
 
